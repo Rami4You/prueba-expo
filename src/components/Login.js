@@ -3,25 +3,23 @@ import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
 import {Alert, Image, Text, View , StyleSheet, TextInput, TouchableOpacity, Dimensions, BackHandler, Button} from "react-native";
 import { useFonts } from 'expo-font';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { initializeApp } from "firebase/app";
-import { firebaseConfig } from '../data/firebase.js';
+import { useFormik } from 'formik';
 
 
 const Login = (props) => {
 
+
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const app = initializeApp(firebaseConfig);
+    // const [loaded] = useFonts({
+    //     Yantramanav: require('../../assets/fonts/Yantramanav-Regular.ttf'),
+    // });
 
-    const [loaded] = useFonts({
-        Yantramanav: require('../../assets/fonts/Yantramanav-Regular.ttf'),
-    });
-
-    if (!loaded) {
-        return null;
-    }
+    // if (!loaded) {
+    //     return null;
+    // }
 
     const Register = () => {
         props.navigation.navigate('Register');

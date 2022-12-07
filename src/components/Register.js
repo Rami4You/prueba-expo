@@ -1,34 +1,75 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import { useFonts } from 'expo-font';
 import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
 import { AntDesign } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker'
 import {Image, Text, View , StyleSheet, TextInput, TouchableOpacity, ScrollView, Dimensions, BackHandler} from "react-native";
+import { useFormik } from 'formik';
+// Initialize Cloud Firestore through Firebase
+import { initializeApp } from "firebase/app"
+import { getFirestore, collection, where, query, getDocs, addDoc} from 'firebase/firestore';
+import { firebaseConfig } from '../data/firebase';
+import sha256 from 'sha256';
 
 export default function Register(props) {
-    const [loaded] = useFonts({
-        Yantramanav: require('../../assets/fonts/Yantramanav-Regular.ttf'),
-    });
-
-    if (!loaded) {
-        return null;
-    }
-
-    BackHandler.addEventListener('hardwareBackPress', function() {
-        props.navigation.navigate('Login');
-        return true;
-    });
+    useEffect(() => {
+        BackHandler.addEventListener('hardwareBackPress', function() {
+            props.navigation.navigate('Login');
+            return true;
+        });
+    }, [])
 
     const formik = useFormik({
         initialValues: {
             FirstName: '',
-            LastName: ''},
-        onSubmit: async (values) => { 
-            
-            props.navigation.navigate('Login');
-        }
+            LastName: '',
+            PhoneNumber: '',
+            Email: '',
+            Password: '',
+            RepeatPassword: '',
+            City: ''
+        },
+        onSubmit: async (values) => {
+            if(values.FirstName.trim() != '' && values.LastName.trim() != '' && values.PhoneNumber.trim() != '' && values.Email.trim() != '' && values.Password.trim() != '' && values.RepeatPassword.trim() != ''){
+                if(values.Password == values.RepeatPassword)
+                {
+                    const app = initializeApp(firebaseConfig);
+                    const db = getFirestore(app);
+                    const userRef = collection(db, "User");
+                    const q = query(userRef, where("Email", "==", values.Email.trim().toLowerCase()));
+                    const querySnapshot = await getDocs(q);
+                    if (querySnapshot.empty) { 
+                        let user = {}
+                        user.FirstName = values.FirstName.trim();
+                        user.LastName = values.LastName.trim();
+                        user.PhoneNumber = values.PhoneNumber.trim();
+                        user.Email = values.Email.trim().toLowerCase();
+                        user.Password = sha256(values.Password);
+                        user.Role = 4;
+                        user.City = 1;
+                        user.Status = 1;
+                        user.CreatedAt = new Date();
 
+                        const docRef = await addDoc(userRef, user);
+                        if (docRef.id != null) {
+                            alert("Usuario registrado correctamente.");
+                            props.navigation.navigate('Login');
+                            return;
+                        }
+                        alert("Error al registrar el usuario.");
+                        return;
+
+                    }
+
+                    alert("Error el email ingresado ya se encuentra registrado.");
+                    return;
+                }
+                alert("Error las contraseñas no coinciden.");
+                return;
+            }
+            alert("Error, existen campos en blanco.");
+        }
     })
 
     return (
@@ -45,28 +86,35 @@ export default function Register(props) {
                 <View style={styles.container}>
                     <Image source={require('../../assets/splash.png')} style={styles.logo} />
                     <View>
-                        <TextInput style={styles.input} placeholder='Nombre' placeholderTextColor='#ABABAB'/>
+                        <TextInput
+                            defaultValue={formik.values.FirstName}
+                            onChangeText={formik.handleChange('FirstName')}
+                            style={styles.input} placeholder='Nombre' placeholderTextColor='#ABABAB' />
 
-                        <TextInput style={styles.input} placeholder='Apellidos' placeholderTextColor='#ABABAB'/>
+                        <TextInput
+                            defaultValue={formik.values.LastName}
+                            onChangeText={formik.handleChange('LastName')}
+                            style={styles.input} placeholder='Apellidos' placeholderTextColor='#ABABAB' />
 
-                        <DropDownPicker 
-                            items = {[
-                                        {label: 'Cochabamba', value: 'Cochabamba'},
-                                        {label: 'La Paz', value: 'La Paz'},
-                                        {label: 'Santa Cruz', value: 'Santa Cruz'},
-                                    ]}
-                            defaultIndex={0}
-                            containerStyle={{height: 40}}
-                            onChangeItem={item => console.log(item.label, item.value)}
-                        />
+                        <TextInput
+                            defaultValue={formik.values.PhoneNumber}
+                            onChangeText={formik.handleChange('PhoneNumber')}
+                            style={styles.input} placeholder='Numero de telefono' placeholderTextColor='#ABABAB' keyboardType='phone-pad' />
 
-                        <TextInput style={styles.input} placeholder='Numero de telefono' placeholderTextColor='#ABABAB' keyboardType='phone-pad'/>
+                        <TextInput
+                            defaultValue={formik.values.Email}
+                            onChangeText={formik.handleChange('Email')}
+                            style={styles.input} placeholder='Email' placeholderTextColor='#ABABAB' keyboardType='email-address' />
 
-                        <TextInput style={styles.input} placeholder='Email' placeholderTextColor='#ABABAB' keyboardType='email-address'/>
+                        <TextInput
+                            defaultValue={formik.values.Password}
+                            onChangeText={formik.handleChange('Password')}
+                            style={styles.input} placeholder='Contraseña' placeholderTextColor='#ABABAB' secureTextEntry={true} />
 
-                        <TextInput style={styles.input} placeholder='Contraseña' placeholderTextColor='#ABABAB' secureTextEntry={true}/>
-
-                        <TextInput style={styles.input} placeholder='Repetir Contraseña' placeholderTextColor='#ABABAB' secureTextEntry={true}/>
+                        <TextInput
+                            defaultValue={formik.values.RepeatPassword}
+                            onChangeText={formik.handleChange('RepeatPassword')}
+                            style={styles.input} placeholder='Repetir Contraseña' placeholderTextColor='#ABABAB' secureTextEntry={true} />
                     </View>
 
                     <View style={styles.button}>
