@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Alert, BackHandler } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
@@ -7,16 +7,19 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 //Screens Restaurants
 import Menu from '../screens/Restaurants/Menu';
-import RestaurantMenu from '../screens/Restaurants/RestaurantMenu';
+import RestaurantMenuScreen from '../screens/Restaurants/RestaurantMenu';
 import RestaurantSummaryOrder from '../screens/Restaurants/RestaurantSummaryOrder';
 
 const RestaurantStackNavigator = createNativeStackNavigator();
 
 function RestaurantStack() {
+    
+    
+
     return(
         <RestaurantStackNavigator.Navigator initialRouteName='Menu'>
             <RestaurantStackNavigator.Screen name="Menu" component={Menu} options={{headerShown: false}}/>
-            <RestaurantStackNavigator.Screen name="RestaurantMenu" component={RestaurantMenu} options={{headerShown: false}}/>
+            <RestaurantStackNavigator.Screen name="RestaurantMenuScreen" component={RestaurantMenuScreen} options={{headerShown: false}}/>
             <RestaurantStackNavigator.Screen name="RestaurantSummaryOrder" component={RestaurantSummaryOrder} options={{headerShown: false}}/>
         </RestaurantStackNavigator.Navigator>
     );
@@ -62,26 +65,26 @@ function MyTabs( props ) {
             }}
         >
             <Tab.Screen name="Orders" component={OrdersStack} options={{
-                                                                        headerShown: false,
-                                                                        tabBarLabel: 'Ordenes',
-                                                                        tabBarIcon: ({ color, size }) => (
-                                                                            <FontAwesome5 name="concierge-bell" size={size} color={color} />
-                                                                        ),
-                                                                      }}/>
+                    headerShown: false,
+                    tabBarLabel: 'Ordenes',
+                    tabBarIcon: ({ color, size }) => (
+                        <FontAwesome5 name="concierge-bell" size={size} color={color} />
+                    ),
+            }}/>
             <Tab.Screen name="Restaurants" component={RestaurantStack} options= {{
-                                                                                    headerShown: false,
-                                                                                    tabBarLabel: 'Restaurantes',
-                                                                                    tabBarIcon: ({ color, size }) => (
-                                                                                        <MaterialIcons name="restaurant" size={30} color={color} />
-                                                                                    ),
-                                                                                  }}/>
+                headerShown: false,
+                tabBarLabel: 'Restaurantes',
+                tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="restaurant" size={30} color={color} />
+                ),
+            }}/>
             <Tab.Screen name="Settings" component={Settings} options={{
-                                                                        headerShown: false,
-                                                                        tabBarLabel: 'Configuracion',
-                                                                        tabBarIcon: ({ color, size }) => (
-                                                                            <MaterialIcons name="settings" size={size} color={color} />
-                                                                        ),
-                                                                      }}/>
+                headerShown: false,
+                tabBarLabel: 'Configuracion',
+                tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="settings" size={size} color={color} />
+                ),
+            }}/>
         </Tab.Navigator>
     );
 }

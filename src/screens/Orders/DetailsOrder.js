@@ -1,63 +1,89 @@
-import React from 'react';
+import React,{useState, useEffect} from 'react';
 import { useFonts } from 'expo-font';
 import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
 import { AntDesign } from '@expo/vector-icons';
 import { Alert, Button, TextInput, View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Dimensions} from 'react-native';
+import { initializeApp } from "firebase/app";
+import { firebaseConfig } from '../../data/firebase';
+import { getFirestore, collection, where, doc,  query, getDocs, getDoc, addDoc } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 const CreateUserScreen = (props) => {
+    const [order, setOrder] = useState(props.route.params.order);
+    const isFocused = useIsFocused();
 
-    const [loaded] = useFonts({
-        Yantramanav: require('../../../assets/fonts/Yantramanav-Regular.ttf'),
-    });
-    
-    if (!loaded) {
-        return null;
-    }
+    useEffect(() => { 
+        if(isFocused){
+            (async () => {
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+                const ordRef = doc(db, "Order", order.id);
 
-  return (
-    <View style={styles.container}>
-        <StatusBar style="light" />
-        <View style={styles.header}>
-            <TouchableOpacity onPress={() => props.navigation.goBack()}>
-                <AntDesign name="left" size={24} color="white" />
-            </TouchableOpacity>
-        </View>
-        <ScrollView>
-            <View style={styles.details}>
-                <View>
-                    <Text style={styles.title}>Detalle de la orden</Text>
+                const ordSnap = await getDoc(ordRef);
+                let ord = ordSnap.data();
+                ord.restaurant = order.restaurant;
+                console.log(ord)
+                var m = ord.Detail.map(async (e) => {
+                    let docRef = doc(db, "Product", e.ProductId);
+                    const docSnap = await getDoc(docRef);
+                    var p = docSnap.data();
+                    p.id = e.ProductId;
+                    p.Quantity = e.Quantity;
+                    return p;
+                })
+                ord.Detail = await Promise.all(m);
+                setOrder(ord);
+            })()
+        }
+    }, [isFocused])
 
-                    <View style={[styles.orderCard, styles.corners]}>
-                        <Text style={styles.lines}>───────────────────────────────</Text>
-                        <View style={styles.orderItem}>
-                            <Image style={styles.image} source={{ uri: 'https://img.freepik.com/free-vector/hand-drawn-traditional-taco-mexican-food-vector_53876-161373.jpg',}} />
-                            <View>
-                                <Text style={styles.text}>Taco Sucio</Text>
-                                <Text style={styles.text}>20 Bs.</Text>
-                            </View>
-                            <Text style={styles.quantity}>1</Text>
+    return (
+        <View style={styles.container}>
+            <StatusBar style="light" />
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => props.navigation.goBack()}>
+                    <AntDesign name="left" size={24} color="white" />
+                </TouchableOpacity>
+            </View>
+            <ScrollView>
+                <View style={styles.details}>
+                    <View>
+                        <Text style={styles.title}>Detalle de la orden</Text>
+                        <View style={[styles.orderCard, styles.corners]}>
+                            {order.Detail.map((e, i) => {
+                            return (
+                                <View style={styles.orderItem} key={i}>
+                                    <Image style={styles.image} source={{ uri: e.Photo,}} />
+                                    <View>
+                                        <Text style={styles.text}>{e.Name}</Text>
+                                        <Text style={styles.text}>{e.Price} Bs.</Text>
+                                    </View>
+                                    <Text style={styles.quantity}>{e.Quantity}</Text>
+                                </View>
+                            )
+                        })}                    
                         </View>
-                        <Text style={styles.lines}>───────────────────────────────</Text>
-                    </View>
+                        
 
-                    <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
-                        <Text style={styles.infoOrder}>Estado</Text>
-                        <Text style={styles.text}>Entregado</Text>
-                    </View>
-                    <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
-                        <Text style={styles.infoOrder}>Fecha</Text>
-                        <Text style={styles.text}>11/24/2022</Text>
-                    </View>
-                    <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
-                        <Text style={styles.infoOrder}>Total</Text>
-                        <Text style={styles.text}>20 Bs.</Text>
+                        <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
+                            <Text style={styles.infoOrder}>Estado</Text>
+                            <Text style={styles.text}>{order.Status == 1 ? "Puesta" : order.Status == 2 ? "Aprobada" : order.Status == 3 ? "Lista" : order.Status == 4 ? "Entregada" : "Cancelada"}</Text>
+                        </View>
+                        <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
+                            <Text style={styles.infoOrder}>Fecha</Text>
+                            <Text style={styles.text}>{new Date().getDay()}/{new Date().getMonth()+1}/{new Date().getFullYear()}</Text>
+                        </View>
+                        <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
+                            <Text style={styles.infoOrder}>Total</Text>
+                            <Text style={styles.text}>{order.Total} Bs.</Text>
+                        </View>
                     </View>
                 </View>
-            </View>
-        </ScrollView>
-    </View>
-  );
+            </ScrollView>
+        </View>
+    );
 };
 
 export default CreateUserScreen;
@@ -115,6 +141,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
+        marginBottom: 10,
     },
     corners: {
         padding : 20,

@@ -1,19 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
 import { AntDesign } from '@expo/vector-icons';
 import { Alert, BackHandler, Button, TextInput, View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Dimensions} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DevSettings } from 'react-native';
 
 const CreateUserScreen = (props) => {
-
-    const [loaded] = useFonts({
-        Yantramanav: require('../../assets/fonts/Yantramanav-Regular.ttf'),
-    });
-    
-    if (!loaded) {
-        return null;
-    }
 
     const LogOut = () => {
         Alert.alert(
@@ -27,7 +21,11 @@ const CreateUserScreen = (props) => {
                 },
                 { 
                     text: "OK",
-                    onPress: () =>  BackHandler.exitApp()
+                    onPress: async () => {
+                        await AsyncStorage.removeItem('User').then(value => {
+                            DevSettings.reload();
+                        }); 
+                    }
                 }
             ],
             { cancelable: false }
@@ -39,23 +37,6 @@ const CreateUserScreen = (props) => {
         <StatusBar style="light" />
         <View>
             <Text style={styles.title}>Configuracion</Text>
-            <View style={[styles.orderCard, styles.corners]}>
-                <Text style={styles.textTitles}>Usuario</Text>
-                <Text style={styles.lines}>──────────────────────────────</Text>
-                <Text style={styles.text}>Sandro Estiven Garcia</Text>
-            </View>
-
-            <View style={[styles.orderCard, styles.corners]}>
-                <Text style={styles.textTitles}>Correo</Text>
-                <Text style={styles.lines}>──────────────────────────────</Text>
-                <Text style={styles.text}>SandroGarciaLaTortugaNinja@gmail.com</Text>
-            </View>
-            <View style={styles.button}>
-                <TouchableOpacity>
-                    <Text style={styles.text}>Cambiar Contraseña</Text>
-                </TouchableOpacity>
-            </View>
-
             <View style={styles.button}>
                 <TouchableOpacity>
                     <Text style={styles.text} onPress = {() => LogOut()} >Cerrar Sesión</Text>

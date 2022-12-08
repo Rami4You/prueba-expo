@@ -1,18 +1,30 @@
-import React, { Component, useEffect, useRef } from 'react'
+import React, { Component, useEffect, useRef, useCallback } from 'react'
 import { Animated, Dimensions, Image, Text, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Login from './Login.js';
-
+import { useFonts } from 'expo-font';
 // Logo....
 import Logo from '../../assets/logo.png';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BGColor = "#1E1E1E"
 
-export default function SplashScreen( props ) {
+export default function SplashScreen(props) {
 
-    setTimeout(() => {
-        props.navigation.navigate('Login');
-    }, 1000);
+    const Main = () => {
+        props.navigation.navigate('Navigation');
+    }
+
+
+    useEffect(() => {
+        (async () => {
+            await AsyncStorage.getItem('User').then((value) => {
+                if (value != null) {
+                    Main();
+                }
+            });
+        })()
+    }, [])
 
     // SafeArea Value...
     const edges = useSafeAreaInsets();

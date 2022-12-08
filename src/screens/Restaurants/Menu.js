@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
@@ -6,21 +6,32 @@ import { AntDesign } from '@expo/vector-icons';
 import { Alert, Button, TextInput, View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Dimensions, BackHandler} from 'react-native';
 import repositories from '../../data/repositories.js';
 import RestaurantItem from './RestaurantItem';
+import { initializeApp } from "firebase/app";
+import { firebaseConfig } from '../../data/firebase';
+import { getFirestore, collection, where, query, getDocs, addDoc } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const OrderMenu = (props) => {
-
-    const [loaded] = useFonts({
-        Yantramanav: require('../../../assets/fonts/Yantramanav-Regular.ttf'),
-    });
+    const [user, setUser] = useState(null);
+    const [restaurants, setRestaurants] = useState([]);
+    useEffect(() => {
+        (async () => {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const userRef = collection(db, "Institution");
+            const querySnapshot = await getDocs(userRef);
+            if (!querySnapshot.empty) {
+                setRestaurants([]);
+                querySnapshot.forEach((doc) => {
+                    let restaurant = doc.data();
+                    restaurant.id = doc.id;
+                    setRestaurants(restaurants => [...restaurants, restaurant]);
+                });
+            }
+        })()
+    },[])
     
-    if (!loaded) {
-        return null;
-    }
-
-    BackHandler.addEventListener('hardwareBackPress', () => {
-        props.navigation.navigate('Menu');
-        return true;
-    });
 
   return (
     <View style={styles.container}>
@@ -29,15 +40,14 @@ const OrderMenu = (props) => {
             <AntDesign name="search1" size={20} color='#D9D9D9' />
             <TextInput style={styles.input} placeholder='Buscar' placeholderTextColor='#D9D9D9'/>
         </View>
-        <FlatList
-            data={repositories}
-            renderItem={({ item: repo}) =>(
-                <TouchableOpacity onPress={() => props.navigation.navigate('RestaurantMenu')}>
-                    <RestaurantItem {...repo}/>
-                </TouchableOpacity>
-            )}
-        >
-        </FlatList>
+          {restaurants.length == 0 && <Text style={{ color: 'white', fontSize: 20, marginTop: 20 }}>No hay restaurantes disponibles</Text>}
+          {restaurants.length > 0 && restaurants.map((e, i) => {
+                return (
+                    <TouchableOpacity key={i} onPress={() => props.navigation.navigate('RestaurantMenuScreen', {restaurant: e})}>
+                        <RestaurantItem {...e}/>
+                    </TouchableOpacity>
+                )
+          })}
     </View>
   );
 };

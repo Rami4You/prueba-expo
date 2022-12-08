@@ -13,6 +13,7 @@ import { firebaseConfig } from '../data/firebase';
 import sha256 from 'sha256';
 
 export default function Register(props) {
+    
     useEffect(() => {
         BackHandler.addEventListener('hardwareBackPress', function() {
             props.navigation.navigate('Login');
