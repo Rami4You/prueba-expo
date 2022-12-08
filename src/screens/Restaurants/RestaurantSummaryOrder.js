@@ -42,7 +42,7 @@ const SummaryOrder = (props) => {
                             CreatedAt: new Date(),
                             OrderType: isChecked ? 2 : 1,
                             Status: 1,
-                            OrderDetail: restaurant.Categories.reduce((acc, curr) => [...acc, ...curr.Products], []).filter(e => e.selected == true).map((product, index) => {
+                            Detail: restaurant.Categories.reduce((acc, curr) => [...acc, ...curr.Products], []).filter(e => e.selected == true).map((product, index) => {
                                 return {
                                     ProductId: product.id,
                                     Quantity: product.quantity

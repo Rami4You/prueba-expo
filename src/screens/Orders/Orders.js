@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: '#1E1E1E',
         alignItems: 'center',
-        fontFamily: 'Yantramanav'
+        fontFamily: 'Yantramanav',
     },
     searchBar: {
         width: Dimensions.get('window').width - 40,

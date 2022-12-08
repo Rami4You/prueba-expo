@@ -25,7 +25,7 @@ const CreateUserScreen = (props) => {
                 let ord = ordSnap.data();
                 ord.restaurant = order.restaurant;
                 console.log(ord)
-                var m = ord.OrderDetail.map(async (e) => {
+                var m = ord.Detail.map(async (e) => {
                     let docRef = doc(db, "Product", e.ProductId);
                     const docSnap = await getDoc(docRef);
                     var p = docSnap.data();
@@ -33,8 +33,7 @@ const CreateUserScreen = (props) => {
                     p.Quantity = e.Quantity;
                     return p;
                 })
-                ord.OrderDetail = await Promise.all(m);
-                console.log(ord.OrderDetail)
+                ord.Detail = await Promise.all(m);
                 setOrder(ord);
             })()
         }
@@ -53,7 +52,7 @@ const CreateUserScreen = (props) => {
                     <View>
                         <Text style={styles.title}>Detalle de la orden</Text>
                         <View style={[styles.orderCard, styles.corners]}>
-                            {order.OrderDetail.map((e, i) => {
+                            {order.Detail.map((e, i) => {
                             return (
                                 <View style={styles.orderItem} key={i}>
                                     <Image style={styles.image} source={{ uri: e.Photo,}} />
@@ -142,6 +141,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
+        marginBottom: 10,
     },
     corners: {
         padding : 20,

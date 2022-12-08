@@ -8,7 +8,7 @@ const OrderItem = (props) => (
         <View style={styles.info}>
             <Text style={styles.infoOrder} >Restaurante: {props.restaurant.Name}</Text>
             <Text style={styles.infoOrder} >Fecha: {new Date().getDay()}/{new Date().getMonth() + 1}/{new Date().getFullYear()}</Text>
-            <Text style={styles.infoOrder} >Bs: {props.Total} - {props.OrderDetail.length} Productos</Text>
+            <Text style={styles.infoOrder} >Bs: {props.Total} - {props.Detail.length} Productos</Text>
         </View>
     </View>
 );

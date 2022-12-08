@@ -18,7 +18,8 @@ const RestaurantMenuScreen = (props) => {
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
             const userRef = collection(db, "Product");
-            const q = query(userRef, where("InstitutionId", "==", restaurant.id));
+            let q = query(userRef, where("InstitutionId", "==", restaurant.id));
+            q = query(q, where("Status", "==", 1));
             const querySnapshot = await getDocs(q);
             let res = restaurant;
             res.Categories.map(e => e.Products = null);
