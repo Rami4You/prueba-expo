@@ -4,16 +4,10 @@ import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
 import { AntDesign } from '@expo/vector-icons';
 import { Alert, BackHandler, Button, TextInput, View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Dimensions} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DevSettings } from 'react-native';
 
 const CreateUserScreen = (props) => {
-
-    const [loaded] = useFonts({
-        Yantramanav: require('../../assets/fonts/Yantramanav-Regular.ttf'),
-    });
-    
-    if (!loaded) {
-        return null;
-    }
 
     const LogOut = () => {
         Alert.alert(
@@ -27,7 +21,11 @@ const CreateUserScreen = (props) => {
                 },
                 { 
                     text: "OK",
-                    onPress: () =>  BackHandler.exitApp()
+                    onPress: async () => {
+                        await AsyncStorage.removeItem('User').then(value => {
+                            DevSettings.reload();
+                        }); 
+                    }
                 }
             ],
             { cancelable: false }

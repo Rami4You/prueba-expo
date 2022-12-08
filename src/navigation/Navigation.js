@@ -62,26 +62,26 @@ function MyTabs( props ) {
             }}
         >
             <Tab.Screen name="Orders" component={OrdersStack} options={{
-                                                                        headerShown: false,
-                                                                        tabBarLabel: 'Ordenes',
-                                                                        tabBarIcon: ({ color, size }) => (
-                                                                            <FontAwesome5 name="concierge-bell" size={size} color={color} />
-                                                                        ),
-                                                                      }}/>
+                    headerShown: false,
+                    tabBarLabel: 'Ordenes',
+                    tabBarIcon: ({ color, size }) => (
+                        <FontAwesome5 name="concierge-bell" size={size} color={color} />
+                    ),
+                }}/>
             <Tab.Screen name="Restaurants" component={RestaurantStack} options= {{
-                                                                                    headerShown: false,
-                                                                                    tabBarLabel: 'Restaurantes',
-                                                                                    tabBarIcon: ({ color, size }) => (
-                                                                                        <MaterialIcons name="restaurant" size={30} color={color} />
-                                                                                    ),
-                                                                                  }}/>
+                headerShown: false,
+                tabBarLabel: 'Restaurantes',
+                tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="restaurant" size={30} color={color} />
+                ),
+                }}/>
             <Tab.Screen name="Settings" component={Settings} options={{
-                                                                        headerShown: false,
-                                                                        tabBarLabel: 'Configuracion',
-                                                                        tabBarIcon: ({ color, size }) => (
-                                                                            <MaterialIcons name="settings" size={size} color={color} />
-                                                                        ),
-                                                                      }}/>
+                headerShown: false,
+                tabBarLabel: 'Configuracion',
+                tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="settings" size={size} color={color} />
+                ),
+                }}/>
         </Tab.Navigator>
     );
 }

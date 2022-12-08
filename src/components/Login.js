@@ -1,33 +1,19 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
 import {Alert, Image, Text, View , StyleSheet, TextInput, TouchableOpacity, Dimensions, BackHandler, Button} from "react-native";
 import { useFonts } from 'expo-font';
 import { useFormik } from 'formik';
-
+// Initialize Cloud Firestore through Firebase
+import { initializeApp } from "firebase/app"
+import { getFirestore, collection, where, query, getDocs, addDoc} from 'firebase/firestore';
+import { firebaseConfig } from '../data/firebase';
+import sha256 from 'sha256';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from "@react-navigation/native";
 
 const Login = (props) => {
-
-
-
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-
-    // const [loaded] = useFonts({
-    //     Yantramanav: require('../../assets/fonts/Yantramanav-Regular.ttf'),
-    // });
-
-    // if (!loaded) {
-    //     return null;
-    // }
-
-    const Register = () => {
-        props.navigation.navigate('Register');
-    }
-
-    const Main = () => {
-        props.navigation.navigate('Navigation');
-    }
+    const navigation = useNavigation();
 
     const handleBackPress = () => {
         Alert.alert(
@@ -46,7 +32,53 @@ const Login = (props) => {
         return true;
     }
 
-    BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    useEffect(() => {
+        BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+        (async () => {
+            await AsyncStorage.getItem('User').then((value) => {
+                if (value != null) {
+                    Main();
+                }
+            });
+        })()
+    }, [])
+
+    const formik = useFormik({
+        initialValues: {
+            Email: '',
+            Password: ''
+        },
+        onSubmit: async (values) => { 
+            if (values.Email.trim() != '' && values.Password.trim() != '') { 
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+                const userRef = collection(db, "User");
+                var q = query(userRef, where("Email", "==", values.Email.trim().toLowerCase()));
+                q = query(q, where("Password", "==", sha256(values.Password)));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) { 
+                    querySnapshot.forEach((doc) => { 
+                        console.log('User: ', doc.data())
+                        AsyncStorage.setItem('User', JSON.stringify(doc.data()));
+                    });
+                    Main();
+                    return;
+                }
+                alert("Error, usuario o contraseña incorrectos");
+                return;
+            }
+            alert("Error, existen campos en blanco");
+            return;
+        }
+    })
+
+    const Register = () => {
+        navigation.navigate('Register');
+    }
+
+    const Main = () => {
+        navigation.navigate('Navigation');
+    }
 
     return (
         <View>
@@ -54,14 +86,20 @@ const Login = (props) => {
             <View style={styles.container}>
                 <Image source={require('../../assets/splash.png')} style={styles.logo} />
                 <View>
-                    <TextInput onChangeText={(text) => setEmail(text)} style={styles.input} placeholder='Email' placeholderTextColor='#ABABAB' keyboardType='email-address'/>
+                    <TextInput
+                        defaultValue={formik.values.Email}
+                        onChangeText={formik.handleChange('Email')}
+                        style={styles.input} placeholder='Email' placeholderTextColor='#ABABAB' keyboardType='email-address' />
                 </View>
                 <View>
-                    <TextInput onChangeText={(text) => setPassword(text)} style={styles.input} placeholder='Contraseña' placeholderTextColor='#ABABAB' secureTextEntry={true}/>
+                    <TextInput
+                        defaultValue={formik.values.Password}
+                        onChangeText={formik.handleChange('Password')}
+                        style={styles.input} placeholder='Contraseña' placeholderTextColor='#ABABAB' secureTextEntry={true} />
                 </View>
 
                 <View style={styles.button}>
-                    <TouchableOpacity onPress={() => Main()}>
+                    <TouchableOpacity onPress={formik.handleSubmit}>
                         <Text style={styles.text}>Iniciar Sesión</Text>
                     </TouchableOpacity>
                 </View>
