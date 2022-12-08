@@ -57,9 +57,10 @@ const Login = (props) => {
                 q = query(q, where("Password", "==", sha256(values.Password)));
                 const querySnapshot = await getDocs(q);
                 if (!querySnapshot.empty) { 
-                    querySnapshot.forEach((doc) => { 
-                        console.log('User: ', doc.data())
-                        AsyncStorage.setItem('User', JSON.stringify(doc.data()));
+                    querySnapshot.forEach(async (doc) => { 
+                        var d = doc.data();
+                        d.id = doc.id;
+                        await AsyncStorage.setItem('User', JSON.stringify(d));
                     });
                     Main();
                     return;

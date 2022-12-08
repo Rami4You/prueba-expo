@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
@@ -37,23 +37,6 @@ const CreateUserScreen = (props) => {
         <StatusBar style="light" />
         <View>
             <Text style={styles.title}>Configuracion</Text>
-            <View style={[styles.orderCard, styles.corners]}>
-                <Text style={styles.textTitles}>Usuario</Text>
-                <Text style={styles.lines}>──────────────────────────────</Text>
-                <Text style={styles.text}>Sandro Estiven Garcia</Text>
-            </View>
-
-            <View style={[styles.orderCard, styles.corners]}>
-                <Text style={styles.textTitles}>Correo</Text>
-                <Text style={styles.lines}>──────────────────────────────</Text>
-                <Text style={styles.text}>SandroGarciaLaTortugaNinja@gmail.com</Text>
-            </View>
-            <View style={styles.button}>
-                <TouchableOpacity>
-                    <Text style={styles.text}>Cambiar Contraseña</Text>
-                </TouchableOpacity>
-            </View>
-
             <View style={styles.button}>
                 <TouchableOpacity>
                     <Text style={styles.text} onPress = {() => LogOut()} >Cerrar Sesión</Text>

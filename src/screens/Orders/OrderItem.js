@@ -4,11 +4,11 @@ import {Alert, Dimensions, View, Image, Text, StyleSheet, TouchableNativeFeedbac
 const OrderItem = (props) => (
 
     <View key={props.id} style={styles.container}>
-        <Image style={styles.image} source={{ uri: props.ownerAvatarUrl}} />
+        <Image style={styles.image} source={{ uri: props.restaurant?.Photo}} />
         <View style={styles.info}>
-            <Text style={styles.infoOrder} >Pendiente: {props.languaje} - {props.stargazersCount}</Text>
-            <Text style={styles.nameRestaurant}>{props.fullName}</Text>
-            <Text style={styles.infoOrder} >Bs: {props.forksCount} - {props.reviewCount} Productos</Text>
+            <Text style={styles.infoOrder} >Restaurante: {props.restaurant.Name}</Text>
+            <Text style={styles.infoOrder} >Fecha: {new Date().getDay()}/{new Date().getMonth() + 1}/{new Date().getFullYear()}</Text>
+            <Text style={styles.infoOrder} >Bs: {props.Total} - {props.OrderDetail.length} Productos</Text>
         </View>
     </View>
 );

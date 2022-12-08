@@ -3,11 +3,11 @@ import {Alert, Dimensions, View, Image, Text, StyleSheet, TouchableNativeFeedbac
 
 const RestaurantItem = (props) => (
 
-    <View key={props.id} style={styles.container}>
-        <Image style={styles.image} source={{ uri: props.ownerAvatarUrl}} />
+    <View key={props.Id} style={styles.container}>
+        <Image style={styles.image} source={{ uri: props.Photo}} />
         <View style={styles.info}>
-            <Text style={styles.nameRestaurant}>{props.fullName}</Text>
-            <Text style={styles.timesRestaurant} >Horario: {props.languaje}</Text>
+            <Text style={styles.nameRestaurant}>{props.Name}</Text>
+            <Text style={styles.timesRestaurant} >{props.Category}</Text>
         </View>
     </View>
 );

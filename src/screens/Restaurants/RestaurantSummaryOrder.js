@@ -1,71 +1,123 @@
-import React, { useState }from 'react';
+import React, { useEffect, useState }from 'react';
 import Checkbox from 'expo-checkbox';
 import { useFonts } from 'expo-font';
 import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
 import { AntDesign } from '@expo/vector-icons';
 import { Alert, Button, TextInput, View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Dimensions, Pressable} from 'react-native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { firebaseConfig } from '../../data/firebase';
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, where, query, getDocs, addDoc } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SummaryOrder = (props) => {
-
+    const isFocused = useIsFocused();
+    const [restaurant, setRestaurant] = useState(props.route.params.restaurant);
     const [isChecked, setChecked] = useState(false);
 
-    const [loaded] = useFonts({
-        Yantramanav: require('../../../assets/fonts/Yantramanav-Regular.ttf'),
-    });
-    
-    if (!loaded) {
-        return null;
+    const handleOrder = () => {
+        Alert.alert(
+            "Realizar Orden",
+            "¿Estas seguro que quieres realizar la orden?",
+            [
+                {
+                    text: "Cancelar",
+                    onPress: () => console.log("Cancel Pressed"),
+                    style: "cancel"
+                },
+                { text: "Aceptar", onPress: async () => {
+                    const app = initializeApp(firebaseConfig);
+                    const db = getFirestore(app);
+                    const orderRef = collection(db, "Order");
+                    var user = JSON.parse(await AsyncStorage.getItem('User'));
+                    console.log(user)
+                    console.log(user.id);
+                    restaurant.Categories = restaurant.Categories.filter(e => e.Products != null);
+                    if (user.id != null) { 
+                        await addDoc(orderRef, {
+                            UserId: user.id,
+                            InstitutionId: restaurant.id,
+                            Total: parseInt(restaurant.Categories.reduce((acc, curr) => curr.Products ? acc + curr.Products.filter(e => e.selected == true).reduce((a, c) => a + c.quantity * c.Price, 0) : acc + curr, 0)),
+                            CreatedAt: new Date(),
+                            OrderType: isChecked ? 2 : 1,
+                            Status: 1,
+                            OrderDetail: restaurant.Categories.reduce((acc, curr) => [...acc, ...curr.Products], []).filter(e => e.selected == true).map((product, index) => {
+                                return {
+                                    ProductId: product.id,
+                                    Quantity: product.quantity
+                                }
+                             })
+                        }).then(() => {
+                            Alert.alert(
+                                "Orden Realizada",
+                                "Tu orden ha sido realizada con exito",
+                                [
+                                    {
+                                        text: "Aceptar",
+                                        onPress: () => props.navigation.navigate("Menu")
+                                    }
+                                ],
+                                { cancelable: false }
+                            )
+                        })
+                    }
+                }
+                }
+            ],
+            
+        )
     }
 
-  return (
-    <View style={styles.container}>
-        <StatusBar style="light" />
-        <View style={styles.header}>
-            <TouchableOpacity onPress={() => props.navigation.goBack()}>
-                <AntDesign name="left" size={24} color="white" />
-            </TouchableOpacity>
-        </View>
-        <ScrollView>
-            <View style={styles.details}>
-                <View>
-                    <Text style={styles.title}>Resumen de la orden</Text>
+    return (
+        <View style={styles.container}>
+            <StatusBar style="light" />
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => props.navigation.goBack()}>
+                    <AntDesign name="left" size={24} color="white" />
+                </TouchableOpacity>
+            </View>
+            <ScrollView>
+                <View style={styles.details}>
+                    <View>
+                        <Text style={styles.title}>Resumen de la orden</Text>
+                        {
+                            restaurant.Categories.map((category, index) => { 
+                                return category.Products && category.Products.filter(e => e.selected == true).map((product, index) => { 
+                                    return (
+                                        <View style={[styles.orderCard, styles.corners]} key={index}>
+                                            <View style={styles.orderItem}>
+                                                <Image style={styles.image} source={{ uri: product.Photo,}} />
+                                                <View>
+                                                    <Text style={styles.text}>{product.Name}</Text>
+                                                    <Text style={styles.text}>{product.Price} Bs.</Text>
+                                                </View>
+                                                <Text style={styles.quantity}>{product.quantity}</Text>
+                                            </View>
+                                        </View>
+                                    )
+                                })
+                            })
+                        }
 
-                    <View style={[styles.orderCard, styles.corners]}>
-                        <Text style={styles.lines}>───────────────────────────────</Text>
-                        <View style={styles.orderItem}>
-                            <Image style={styles.image} source={{ uri: 'https://img.freepik.com/free-vector/hand-drawn-traditional-taco-mexican-food-vector_53876-161373.jpg',}} />
-                            <View>
-                                <Text style={styles.text}>Taco Sucio</Text>
-                                <Text style={styles.text}>20 Bs.</Text>
-                            </View>
-                            <Text style={styles.quantity}>1</Text>
+                        <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
+                            <Text style={styles.infoOrder}>¿Consumir en el local?</Text>
+                            <Checkbox style={styles.cbx} value={isChecked} onValueChange={setChecked} />
                         </View>
-                        <Text style={styles.lines}>───────────────────────────────</Text>
-                    </View>
-
-                    <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
-                        <Text style={styles.infoOrder}>¿Consumir en el local?</Text>
-                        <Checkbox style={styles.cbx} value={isChecked} onValueChange={setChecked} />
-                    </View>
-                    <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
-                        <Text style={styles.infoOrder}>NIT: </Text>
-                        <TextInput style={styles.text}>11/24/2022</TextInput>
-                    </View>
-                    <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
-                        <Text style={styles.infoOrder}>Total</Text>
-                        <Text style={styles.text}>20 Bs.</Text>
+                        <View style={[styles.orderCard, styles.corners, styles.orderItem]}>
+                            <Text style={styles.infoOrder}>Total</Text>
+                            <Text style={styles.text}>{parseInt(restaurant.Categories.reduce((acc, curr) => curr.Products ? acc + curr.Products.filter(e => e.selected == true).reduce((a,c) => a + c.quantity * c.Price,0) : acc+curr, 0)) } Bs.</Text>
+                        </View>
                     </View>
                 </View>
+            </ScrollView>
+            <View style={styles.button}>
+                <TouchableOpacity onPress={handleOrder}>
+                    <Text style={styles.textbtn}>Confirmar orden</Text>
+                </TouchableOpacity>
             </View>
-        </ScrollView>
-        <View style={styles.button}>
-            <TouchableOpacity onPress={() => props.navigation.navigate('Menu')}>
-                <Text style={styles.textbtn}>Confirmar orden</Text>
-            </TouchableOpacity>
         </View>
-    </View>
-  );
+    );
 };
 
 export default SummaryOrder;
